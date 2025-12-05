@@ -1,3 +1,20 @@
+from enum import Enum
+from typing import List, Dict, Optional
+
+
+# Перечисление жанров
+class Genre(Enum):
+    ACTION = "Боевик"
+    COMEDY = "Комедия"
+    DRAMA = "Драма"
+    HORROR = "Ужасы"
+    SCI_FI = "Фантастика"
+    ROMANCE = "Романтика"
+    THRILLER = "Триллер"
+    FANTASY = "Фэнтези"
+    ADVENTURE = "Приключения"
+    ANIMATION = "Мультфильм"
+
 class Movie:
 
     def __init__(self, movie_id: int, title: str, genres: List[Genre],
