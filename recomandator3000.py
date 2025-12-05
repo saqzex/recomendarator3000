@@ -1,4 +1,5 @@
 from enum import Enum
+from abc import ABC, abstractclassmethod
 from typing import List, Dict, Optional
 
 
@@ -188,3 +189,60 @@ class DataManager:
             movie_id = self.get_next_movie_id()
             movie = Movie(movie_id, title, genres, director, year, rating)
             self.add_movie(movie)
+
+
+#- Создать абстрактный базовый класс для стратегий рекомендаций
+class RecommendationStrategy(ABC):
+    def __init__(self, data_manager: DataManager):
+        self._data_manager = data_manager
+
+    @abstractclassmethod
+    @classmethod
+    def get_reccomendations(self, user:User, min_rating: float = 0.0, min_year: int = 0, max_results:int = 10):
+        pass
+
+
+# На основе жанров - рекомендует фильмы любимых жанров пользователя
+class GenreBasedStrategy(RecommendationStrategy):
+    def get_recommendations(self, user: User, min_rating: float = 0.0,min_year: int = 0, max_results: int = 10):
+        
+        reccomendations = []
+        watched_ids = set(user.watched_movies.keys())
+
+        preffered_genres = user.preferred_genres
+        # if not preffered_genres:
+
+
+        for movie in self._data_manager.get_all_movies():
+            if movie.movie_id not in watched_ids:
+                if movie.rating >= min_rating and movie.year > min_year:
+                    for genre in preffered_genres:
+                        if genre in movie.genres:
+                            reccomendations.append(movie)
+                            break
+
+        reccomendations.sort(key= lambda x: x.rating)
+        return reccomendations[:max_results]
+    
+
+class RatingBasedStrategy(RecommendationStrategy):
+    def get_recommendations(self, user: User, min_rating: float = 0.0, min_year: int = 0, max_results: int = 10) -> List[Movie]:
+        watched_ids = set(user.watched_movies.keys())
+        recommendations = []
+
+        for movie in self._data_manager.get_all_movies():
+            if movie.movie_id not in watched_ids:
+                if movie.rating >= min_rating and movie.year >= min_year:
+                    recommendations.append(movie)
+
+        recommendations.sort(key = lambda x: x.rating)
+        return recommendations[:max_results]
+
+        
+    
+        
+        
+
+
+
+
