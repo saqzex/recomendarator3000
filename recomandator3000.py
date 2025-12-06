@@ -64,7 +64,7 @@ class User:
         self._user_id = user_id
         self._name = name
         self._password = password
-        self._watched_movies: Dict[int, float] = {}
+        self._watched_movies: Dict[int, float] = {} #словарь из id фильма и оценки
         self._preferred_genres: List[Genre] = []
 
     @property
@@ -196,7 +196,7 @@ class RecommendationStrategy(ABC):
     def __init__(self, data_manager: DataManager):
         self._data_manager = data_manager
 
-    @abstractclassmethod
+    #@abstractclassmethod
     @classmethod
     def get_reccomendations(self, user:User, min_rating: float = 0.0, min_year: int = 0, max_results:int = 10):
         pass
@@ -210,8 +210,23 @@ class GenreBasedStrategy(RecommendationStrategy):
         watched_ids = set(user.watched_movies.keys())
 
         preffered_genres = user.preferred_genres
-        # if not preffered_genres:
+        if not preffered_genres: #угадывает любимые жанры пользователя по уже просмотренным фильмам
+            genre_counts = {} #создаётся словарь: жанр - сколько раз он встретился.
+            
+            for movie_id in watched_ids:
+                movie = self._data_manager.get_movie(movie_id)
+                if not movie:
+                    continue
 
+                for genre in genre_counts:
+                    if genre in genre_counts:
+                        genre_counts[genre] += 1
+                    else:
+                        genre_counts = 1 #тоесть если фильм с таким жанром еще не встречался он становится 1
+
+            if genre_counts: #берем 3 самых частых жанра
+                sorted_genres = sorted(genre_counts.items(), key = lambda item: item[1], reverse= True) #reverse = True сортировка по убыванию
+                preffered_genres = [genre for genre, count in sorted_genres[:3]]
 
         for movie in self._data_manager.get_all_movies():
             if movie.movie_id not in watched_ids:
@@ -221,7 +236,7 @@ class GenreBasedStrategy(RecommendationStrategy):
                             reccomendations.append(movie)
                             break
 
-        reccomendations.sort(key= lambda x: x.rating)
+        reccomendations.sort(key = lambda x: x.rating)
         return reccomendations[:max_results]
     
 
@@ -237,6 +252,46 @@ class RatingBasedStrategy(RecommendationStrategy):
 
         recommendations.sort(key = lambda x: x.rating)
         return recommendations[:max_results]
+    
+class SimilarUserStrategy(RecommendationStrategy):
+    def _calculate_similarity(self, user1: User, user2:User):
+        watched1 = set(user1.watched_movies.keys()) # получаем id
+        watched2 = set(user2.watched_movies.keys())
+        common = watched1 & watched2 
+
+        if not common:
+            return 0.0
+        
+        total_diff = 0.0 #сумма разниц
+        for movie_id in common:
+            diff = abs(user1.watched_movies[movie_id] - user2.watched_movies[movie_id]) #разница в оценке фильма
+            total_diff += diff
+
+        avg_diff = total_diff/ len(common) #если вкусы почти совпадают то число близко к 0, если сильно расходятся то ближе к 10
+        #чтобы из макс 10 сделать 0 или 1. делим на 10. (avg_diff/10) - насколько они разные, нам надо наоборот, поэтому вычитаем из 1
+        return max(0.0, 1.0 - (avg_diff/10)) #чем ближе к 1 тем более похожи
+    
+    def get_recommendations(self, user: User, min_rating: float = 0.0, min_year: int = 0, max_results : int = 10):
+
+        watched_ids = set(user.watched_movies.keys())
+        movie_scores: Dict[int, float] = {}
+
+        for other_user in self._data_manager.get_all_users():
+            if other_user.user_id == user.user_id:
+                continue
+
+            similarity = self._calculate_similarity(user, other_user)
+            if similarity <  0.3:
+                continue # слишком не похожий пользователь
+
+            for movie_id, rating in other_user.watched_movies.items():
+                if movie_id not in watched_ids:
+                    score = similarity * rating
+                    #складываются все score для каждого фильма от разных пользователе
+                    movie_scores[movie_id] = movie_scores.get(movie_id, 0.0) + score
+
+        sorted_movies = sorted(movie_scores.items(), key = lambda x: x[1], reverse= True)                    
+
 
         
     
