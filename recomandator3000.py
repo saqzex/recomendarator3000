@@ -290,7 +290,17 @@ class SimilarUserStrategy(RecommendationStrategy):
                     #складываются все score для каждого фильма от разных пользователе
                     movie_scores[movie_id] = movie_scores.get(movie_id, 0.0) + score
 
-        sorted_movies = sorted(movie_scores.items(), key = lambda x: x[1], reverse= True)                    
+        sorted_movies = sorted(movie_scores.items(), key = lambda x: x[1], reverse = True)  
+        
+        recommendations = []                  
+        for movie_id, score in sorted_movies:
+            movie = self._data_manager.get_movie(movie_scores)
+            if movie and movie.rating >= min_rating and movie.year >= min_year:
+                recommendations.append(movie)
+                if len(recommendations) >= max_results:
+                    break
+
+        return recommendations
 
 
         
