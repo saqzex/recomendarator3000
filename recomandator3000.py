@@ -241,7 +241,7 @@ class GenreBasedStrategy(RecommendationStrategy):
     
 
 class RatingBasedStrategy(RecommendationStrategy):
-    def get_recommendations(self, user: User, min_rating: float = 0.0, min_year: int = 0, max_results: int = 10) -> List[Movie]:
+    
     def get_recommendations(self, user: User, min_rating: float = 0.0, min_year: int = 0, max_results: int = 10) :
         watched_ids = set(user.watched_movies.keys())
         recommendations = []
