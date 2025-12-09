@@ -1,6 +1,8 @@
 from enum import Enum
 from abc import ABC, abstractclassmethod
 from typing import List, Dict, Optional
+import json
+import os
 
 
 # Перечисление жанров
@@ -109,11 +111,61 @@ class User:
 # Менеджер данных
 class DataManager:
 
-    def __init__(self):
+    def __init__(self, filename="data.json"):
+        self.filename = filename
         self._movies: Dict[int, Movie] = {}
         self._users: Dict[int, User] = {}
         self._next_movie_id = 1
         self._next_user_id = 1
+
+    #загружаем данные если файл существует
+        if os.path.exists(self.filename):
+            self.load_from_file()
+        else:
+            self.load_test_data()
+            self.save_to_file()
+
+    #сохранение пользователя
+    def save_to_file(self):
+        data = {
+            "users": {},
+        }
+
+        for user_id, user in self._users.items():
+            data["users"][user_id] = {
+                "name": user.name,
+                "password": user._password,
+                "watched": user.watched_movies,
+                "preferred_genres": [g.value for g in user.preferred_genres],
+            }
+
+        with open(self.filename, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    #загрузка
+    def load_from_file(self):
+        with open(self.filename, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        self.load_test_data()  # фильмы всегда загружаем одинаково
+
+        for user_id, u in data["users"].items():
+            user = User(int(user_id), u["name"], u["password"])
+            # восстановление оценок
+            for movie_id, rating in u["watched"].items():
+                user.add_rating(int(movie_id), rating)
+            # восстановление жанров
+            genres = []
+            for g in u["preferred_genres"]:
+                for genre in Genre:
+                    if genre.value == g:
+                        genres.append(genre)
+            user.set_preferred_genres(genres)
+
+            self._users[user.user_id] = user
+
+        #изменяем следующий ID
+        self._next_user_id = max(self._users.keys()) + 1 if self._users else 1
+
 
     def add_movie(self, movie: Movie):
         #добавление фильма
