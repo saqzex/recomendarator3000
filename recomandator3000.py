@@ -433,5 +433,68 @@ class MovieRecommendationApp:
         else:
             print("\nОшибка: неправильное имя или пароль!")
 
+ # Просмотр фильмов           
+    def show_movies(self):
+        movies = self.data_manager.get_all_movies()
+        print(f"\nВсего фильмов: {len(movies)}")
+        print("-"*50)
+        for movie in movies:
+            print(f"{movie.movie_id}. {movie}")
 
+# Оценка фильма
+    def rate_movie(self):
+        if not self.current_user:
+            print("Сначала войдите в систему!")
+            return
 
+        self.show_movies()
+
+        try:
+            movie_id = int(input("\nВведите ID фильма: "))
+            movie = self.data_manager.get_movie(movie_id)
+            if not movie:
+                print("Фильм не найден!")
+                return
+
+            rating = float(input("Введите оценку (0-10): "))
+            self.current_user.add_rating(movie_id, rating)
+            print(f"Вы оценили фильм '{movie.title}' на {rating} баллов!")
+        except ValueError:
+            print("Ошибка ввода!")
+
+# Получение рекомендаций
+    def get_recommendations(self):
+        if not self.current_user:
+            print("Сначала войдите!")
+            return
+
+        print("\nВыберите стратегию:")
+        print("1. По жанрам")
+        print("2. По рейтингу")
+        print("3. По похожим пользователям")
+
+        try:
+            strategy_num = int(input("Ваш выбор: "))
+            if strategy_num not in self.strategies:
+                print("Неверный выбор!")
+                return
+
+            min_rating = float(input("Мин. рейтинг (по умолч. 0): ") or 0)
+            min_year = int(input("Мин. год (по умолч. 0): ") or 0)
+            max_results = int(input("Макс. результатов (по умолч. 10): ") or 10)
+
+            strategy = self.strategies[strategy_num]
+            recommendations = strategy.get_recommendations(
+                self.current_user, min_rating, min_year, max_results
+            )
+
+            print("\nРекомендации:")
+            print("-"*50)
+            if not recommendations:
+                print("Нет подходящих фильмов!")
+            else:
+                for i, movie in enumerate(recommendations, 1):
+                    print(f"{i}. {movie}")
+
+        except ValueError:
+            print("Ошибка ввода!")
