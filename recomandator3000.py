@@ -381,5 +381,11 @@ class MovieRecommendationApp:
         else:
             print("\nОшибка: неправильное имя или пароль!")
 
-
+ # Просмотр фильмов           
+    def show_movies(self):
+        movies = self.data_manager.get_all_movies()
+        print(f"\nВсего фильмов: {len(movies)}")
+        print("-"*50)
+        for movie in movies:
+            print(f"{movie.movie_id}. {movie}")
 
