@@ -389,3 +389,24 @@ class MovieRecommendationApp:
         for movie in movies:
             print(f"{movie.movie_id}. {movie}")
 
+# Оценка фильма
+    def rate_movie(self):
+        if not self.current_user:
+            print("Сначала войдите в систему!")
+            return
+
+        self.show_movies()
+
+        try:
+            movie_id = int(input("\nВведите ID фильма: "))
+            movie = self.data_manager.get_movie(movie_id)
+            if not movie:
+                print("Фильм не найден!")
+                return
+
+            rating = float(input("Введите оценку (0-10): "))
+            self.current_user.add_rating(movie_id, rating)
+            print(f"Вы оценили фильм '{movie.title}' на {rating} баллов!")
+        except ValueError:
+            print("Ошибка ввода!")
+
