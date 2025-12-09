@@ -529,3 +529,32 @@ class MovieRecommendationApp:
 
         except ValueError:
             print("Ошибка ввода!")
+
+
+    def run(self):
+        while True:
+            self.show_main_menu()
+            choice = input("\nВыберите действие: ").strip()
+
+            if choice == "1":
+                self.register_user()
+            elif choice == "2":
+                self.login_user()
+            elif choice == "3":
+                self.show_movies()
+            elif choice == "4":
+                self.rate_movie()
+            elif choice == "5":
+                self.get_recommendations()
+            elif choice == "6":
+                self.set_preferences()
+            elif choice == "7":
+                print("До свидания!")
+                break
+            else:
+                print("Неверный выбор!")
+
+
+if __name__ == "__main__":
+    app = MovieRecommendationApp()
+    app.run()         
