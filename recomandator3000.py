@@ -371,7 +371,7 @@ class MovieRecommendationApp:
         self.strategies = {
             1: GenreBasedStrategy(self.data_manager),
             2: RatingBasedStrategy(self.data_manager),
-            3: SimilarUsersStrategy(self.data_manager)
+            3: SimilarUserStrategy(self.data_manager)
         }
 
 # Главное меню
