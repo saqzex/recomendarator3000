@@ -498,3 +498,34 @@ class MovieRecommendationApp:
 
         except ValueError:
             print("Ошибка ввода!")
+
+
+# Фильтр, препочитаемые жанры
+    def set_preferences(self):
+        if not self.current_user:
+            print("Сначала войдите!")
+            return
+
+        print("\nНастройка предпочтений")
+        print("-"*50)
+
+        for i, genre in enumerate(Genre, 1):
+            print(f"{i}. {genre.value}")
+
+        try:
+            genre_nums = input("\nВведите номера через запятую: ").split(",")
+            selected_genres = []
+
+            for num_str in genre_nums:
+                num = int(num_str.strip())
+                if 1 <= num <= len(Genre):
+                    selected_genres.append(list(Genre)[num - 1])
+
+            if selected_genres:
+                self.current_user.set_preferred_genres(selected_genres)
+                print("Предпочтения обновлены!")
+            else:
+                print("Вы не выбрали жанры!")
+
+        except ValueError:
+            print("Ошибка ввода!")
