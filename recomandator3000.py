@@ -410,3 +410,39 @@ class MovieRecommendationApp:
         except ValueError:
             print("Ошибка ввода!")
 
+# Получение рекомендаций
+    def get_recommendations(self):
+        if not self.current_user:
+            print("Сначала войдите!")
+            return
+
+        print("\nВыберите стратегию:")
+        print("1. По жанрам")
+        print("2. По рейтингу")
+        print("3. По похожим пользователям")
+
+        try:
+            strategy_num = int(input("Ваш выбор: "))
+            if strategy_num not in self.strategies:
+                print("Неверный выбор!")
+                return
+
+            min_rating = float(input("Мин. рейтинг (по умолч. 0): ") or 0)
+            min_year = int(input("Мин. год (по умолч. 0): ") or 0)
+            max_results = int(input("Макс. результатов (по умолч. 10): ") or 10)
+
+            strategy = self.strategies[strategy_num]
+            recommendations = strategy.get_recommendations(
+                self.current_user, min_rating, min_year, max_results
+            )
+
+            print("\nРекомендации:")
+            print("-"*50)
+            if not recommendations:
+                print("Нет подходящих фильмов!")
+            else:
+                for i, movie in enumerate(recommendations, 1):
+                    print(f"{i}. {movie}")
+
+        except ValueError:
+            print("Ошибка ввода!")
