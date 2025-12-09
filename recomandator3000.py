@@ -308,7 +308,78 @@ class SimilarUserStrategy(RecommendationStrategy):
     
         
         
+# Блок 3: Расширение системы и интерфейс
+class MovieRecommendationApp:
 
+    def __init__(self):
+        self.data_manager = DataManager()
+        self.data_manager.load_test_data()
+        self.current_user: Optional[User] = None
+
+        self.strategies = {
+            1: GenreBasedStrategy(self.data_manager),
+            2: RatingBasedStrategy(self.data_manager),
+            3: SimilarUsersStrategy(self.data_manager)
+        }
+
+# Главное меню
+    def show_main_menu(self):                                               
+        print("\n" + "="*50)
+        print("РЕКОМЕНДАТЕЛЬНАЯ СИСТЕМА ФИЛЬМОВ")
+        print("="*50)
+        if self.current_user:
+            print(f"Текущий пользователь: {self.current_user.name}")
+        print("\n1. Регистрация")
+        print("2. Вход")
+        print("3. Просмотр фильмов")
+        print("4. Оценить фильм")
+        print("5. Получить рекомендации")
+        print("6. Настроить предпочтения")
+        print("7. Выход")
+        print("="*50)
+
+# Регистрация
+    def register_user(self):
+        print("\n" + "="*50)
+        print("РЕГИСТРАЦИЯ")
+        print("="*50)
+
+        name = input("Введите имя: ").strip()
+        if not name:
+            print("Имя не может быть пустым!")
+            return
+
+        if self.data_manager.get_user_by_name(name):
+            print("Пользователь с таким именем уже существует!")
+            return
+
+        password = input("Введите пароль: ").strip()
+        if not password:
+            print("Пароль не может быть пустым!")
+            return
+
+        user_id = self.data_manager.get_next_user_id()
+        user = User(user_id, name, password)
+        self.data_manager.add_user(user)
+        self.current_user = user
+
+        print(f"\nПользователь '{name}' успешно зарегистрирован!")
+
+# Вход
+    def login_user(self):
+        print("\n" + "="*50)
+        print("ВХОД")
+        print("="*50)
+
+        name = input("Введите имя: ").strip()
+        password = input("Введите пароль: ").strip()
+
+        user = self.data_manager.authenticate(name, password)
+        if user:
+            self.current_user = user
+            print(f"\nДобро пожаловать, {user.name}!")
+        else:
+            print("\nОшибка: неправильное имя или пароль!")
 
 
 
