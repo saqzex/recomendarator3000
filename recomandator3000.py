@@ -148,6 +148,7 @@ class DataManager:
             data = json.load(f)
 
         users_data = data.get("users", {})
+        self.load_test_data()
         for user_id_str, u in users_data.items():
             try:
                 uid = int(user_id_str)
@@ -472,6 +473,8 @@ class MovieRecommendationApp:
         except ValueError:
             print("Ошибка ввода!")
 
+        self.data_manager.save_to_file()
+
 # Получение рекомендаций
     def get_recommendations(self):
         if not self.current_user:
@@ -533,6 +536,7 @@ class MovieRecommendationApp:
 
             if selected_genres:
                 self.current_user.set_preferred_genres(selected_genres)
+                self.data_manager.save_to_file()
                 print("Предпочтения обновлены!")
             else:
                 print("Вы не выбрали жанры!")

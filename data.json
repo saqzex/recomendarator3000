@@ -3,6 +3,16 @@
         "1": {
             "name": "рус",
             "password": "123",
+            "watched": {
+                "1": 10.0
+            },
+            "preferred_genres": [
+                "Боевик"
+            ]
+        },
+        "2": {
+            "name": "таня",
+            "password": "123",
             "watched": {},
             "preferred_genres": []
         }
