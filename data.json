@@ -1,3 +1,10 @@
 {
-    "users": {}
+    "users": {
+        "1": {
+            "name": "рус",
+            "password": "123",
+            "watched": {},
+            "preferred_genres": []
+        }
+    }
 }

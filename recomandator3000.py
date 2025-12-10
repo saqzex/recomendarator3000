@@ -424,7 +424,7 @@ class MovieRecommendationApp:
         user = User(user_id, name, password)
         self.data_manager.add_user(user)
         self.current_user = user
-
+        self.data_manager.save_to_file()
         print(f"\nПользователь '{name}' успешно зарегистрирован!")
 
 # Вход
