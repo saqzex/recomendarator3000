@@ -118,11 +118,12 @@ class DataManager:
         self._next_movie_id = 1
         self._next_user_id = 1
 
+        self.load_test_data()
+
     #загружаем данные если файл существует
         if os.path.exists(self.filename):
             self.load_from_file()
         else:
-            self.load_test_data()
             self.save_to_file()
 
     #сохранение пользователя
@@ -146,25 +147,35 @@ class DataManager:
         with open(self.filename, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        self.load_test_data()  # фильмы всегда загружаем одинаково
-
-        for user_id, u in data["users"].items():
-            user = User(int(user_id), u["name"], u["password"])
-            # восстановление оценок
-            for movie_id, rating in u["watched"].items():
-                user.add_rating(int(movie_id), rating)
-            # восстановление жанров
+        users_data = data.get("users", {})
+        for user_id_str, u in users_data.items():
+            try:
+                uid = int(user_id_str)
+            except ValueError:
+                continue
+            user = User(uid, u.get("name", ""), u.get("password", ""))
+            watched = u.get("watched", {})
+            for movie_id_str, rating in watched.items():
+                try:
+                    mid = int(movie_id_str)
+                    user.add_rating(mid, rating)
+                except ValueError:
+                    continue
+            pref = u.get("preferred_genres", [])
             genres = []
-            for g in u["preferred_genres"]:
+            for g in pref:
                 for genre in Genre:
                     if genre.value == g:
                         genres.append(genre)
+                        break
             user.set_preferred_genres(genres)
-
             self._users[user.user_id] = user
 
-        #изменяем следующий ID
-        self._next_user_id = max(self._users.keys()) + 1 if self._users else 1
+        # пересчитываем следующий ID
+        if self._users:
+            self._next_user_id = max(self._users.keys()) + 1
+        else:
+            self._next_user_id = 1
 
 
     def add_movie(self, movie: Movie):
@@ -261,7 +272,7 @@ class GenreBasedStrategy(RecommendationStrategy):
         reccomendations = []
         watched_ids = set(user.watched_movies.keys())
 
-        preffered_genres = user.preferred_genres
+        preffered_genres = set(user.preferred_genres)
         if not preffered_genres: #угадывает любимые жанры пользователя по уже просмотренным фильмам
             genre_counts = {} #создаётся словарь: жанр - сколько раз он встретился.
             
@@ -288,7 +299,7 @@ class GenreBasedStrategy(RecommendationStrategy):
                             reccomendations.append(movie)
                             break
 
-        reccomendations.sort(key = lambda x: x.rating)
+        reccomendations.sort(key = lambda x: x.rating, reverse=True)
         return reccomendations[:max_results]
     
 
@@ -303,7 +314,7 @@ class RatingBasedStrategy(RecommendationStrategy):
                 if movie.rating >= min_rating and movie.year >= min_year:
                     recommendations.append(movie)
 
-        recommendations.sort(key = lambda x: x.rating)
+        recommendations.sort(key = lambda x: x.rating, reverse=True)
         return recommendations[:max_results]
     
 class SimilarUserStrategy(RecommendationStrategy):
@@ -365,7 +376,6 @@ class MovieRecommendationApp:
 
     def __init__(self):
         self.data_manager = DataManager()
-        self.data_manager.load_test_data()
         self.current_user: Optional[User] = None
 
         self.strategies = {
